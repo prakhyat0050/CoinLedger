@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import type { ChainId, WalletAnalysisResult, Transaction } from '@/types';
 
 export type AppView = 'landing' | 'dashboard';
-export type DashboardTab = 'overview' | 'transactions' | 'portfolio' | 'gas' | 'tax' | 'insights';
+export type DashboardTab = 'overview' | 'transactions' | 'portfolio' | 'gas' | 'tax' | 'insights' | 'copilot';
 
 interface AppState {
   view: AppView;

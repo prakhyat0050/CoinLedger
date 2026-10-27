@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowLeftRight, Briefcase, Fuel, FileText, Lightbulb } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Briefcase, Fuel, FileText, Lightbulb, Sparkles } from 'lucide-react';
 import { useI18n } from '@/i18n/context';
 import { useApp, type DashboardTab } from '@/context/AppContext';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
@@ -10,6 +10,7 @@ import { PortfolioTab } from './PortfolioTab';
 import { GasTab } from './GasTab';
 import { TaxTab } from './TaxTab';
 import { InsightsTab } from './InsightsTab';
+import { WalletCopilot } from './WalletCopilot';
 
 const TABS: Array<{ id: DashboardTab; icon: typeof LayoutDashboard; labelKey: string }> = [
   { id: 'overview', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
@@ -18,6 +19,7 @@ const TABS: Array<{ id: DashboardTab; icon: typeof LayoutDashboard; labelKey: st
   { id: 'gas', icon: Fuel, labelKey: 'nav.gasAnalytics' },
   { id: 'tax', icon: FileText, labelKey: 'nav.taxReport' },
   { id: 'insights', icon: Lightbulb, labelKey: 'nav.insights' },
+  { id: 'copilot', icon: Sparkles, labelKey: 'nav.copilot' },
 ];
 
 export function Dashboard() {
@@ -71,6 +73,7 @@ export function Dashboard() {
           {activeTab === 'gas' && <GasTab />}
           {activeTab === 'tax' && <TaxTab />}
           {activeTab === 'insights' && <InsightsTab />}
+          {activeTab === 'copilot' && <WalletCopilot />}
         </div>
       </div>
 

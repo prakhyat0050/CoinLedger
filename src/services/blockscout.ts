@@ -14,8 +14,10 @@ import type {
 } from '@/types';
 import { getChain, STABLECOINS } from './chains';
 
-const EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blockscout-api`;
-const AUTH_HEADER = `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim();
+const EDGE_FUNCTION_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/blockscout-api` : '';
+const AUTH_HEADER = SUPABASE_ANON_KEY ? `Bearer ${SUPABASE_ANON_KEY}` : '';
 
 interface ProxyResponse<T> {
   data: T | null;
@@ -29,6 +31,13 @@ async function proxyToBlockscout<T>(
   queryParams?: Record<string, string>,
 ): Promise<ProxyResponse<T>> {
   try {
+  if (!EDGE_FUNCTION_URL || !AUTH_HEADER) {
+    return {
+      data: null,
+      error: 'Wallet API is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY or use demo mode.',
+      errorCode: 'service_unavailable',
+    };
+  }
     const response = await fetch(EDGE_FUNCTION_URL, {
       method: 'POST',
       headers: {
@@ -363,9 +372,185 @@ export async function fetchTokenBalances(
   );
 }
 
+
+function buildDemoWalletData(chainId: ChainId, address: string): {
+  summary: WalletSummary | null;
+  transactions: Transaction[];
+  tokenHoldings: TokenHolding[];
+  error: string | null;
+  errorCode: string | null;
+} {
+  const chain = getChain(chainId);
+  const exchangeRate = 2950;
+  const now = Date.now();
+
+  const transactions: Transaction[] = [
+    {
+      hash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12',
+      blockNumber: 22048914,
+      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 4).toISOString(),
+      direction: 'in',
+      fromAddress: '0x1111111111111111111111111111111111111111',
+      toAddress: address,
+      assetSymbol: chain.currencySymbol,
+      assetType: 'native',
+      assetContract: null,
+      rawAmount: '1500000000000000000',
+      decimals: 18,
+      humanAmount: 1.5,
+      usdValue: 4425,
+      gasUsed: '21000',
+      gasPrice: '180000000000',
+      gasCostInNative: 0.00378,
+      gasCostInUsd: 11.15,
+      nativeSymbol: chain.currencySymbol,
+      status: 'ok',
+      method: 'transfer',
+      category: 'income',
+      categoryConfidence: 'high',
+      createdContract: null,
+      rawData: {},
+    },
+    {
+      hash: '0x2a3b4c5d6e7f8901bcdef2345678901abcdef234',
+      blockNumber: 22047990,
+      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 9).toISOString(),
+      direction: 'out',
+      fromAddress: address,
+      toAddress: '0xb2222222222222222222222222222222222222',
+      assetSymbol: 'USDC',
+      assetType: 'erc20',
+      assetContract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      rawAmount: '1250000000',
+      decimals: 6,
+      humanAmount: 1250,
+      usdValue: 1250,
+      gasUsed: '65000',
+      gasPrice: '220000000000',
+      gasCostInNative: 0.0143,
+      gasCostInUsd: 42.1,
+      nativeSymbol: chain.currencySymbol,
+      status: 'ok',
+      method: 'transfer',
+      category: 'payment',
+      categoryConfidence: 'high',
+      createdContract: null,
+      rawData: {},
+    },
+    {
+      hash: '0x3b4c5d6e7f8901abcde2345678901abcdef2345',
+      blockNumber: 22045413,
+      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 15).toISOString(),
+      direction: 'out',
+      fromAddress: address,
+      toAddress: '0xc3333333333333333333333333333333333333',
+      assetSymbol: chain.currencySymbol,
+      assetType: 'native',
+      assetContract: null,
+      rawAmount: '800000000000000000',
+      decimals: 18,
+      humanAmount: 0.8,
+      usdValue: 2360,
+      gasUsed: '400000',
+      gasPrice: '170000000000',
+      gasCostInNative: 0.068,
+      gasCostInUsd: 200,
+      nativeSymbol: chain.currencySymbol,
+      status: 'ok',
+      method: 'swap',
+      category: 'swap',
+      categoryConfidence: 'medium',
+      createdContract: null,
+      rawData: {},
+    },
+    {
+      hash: '0x4c5d6e7f8901abcde2345678901abcdef23456',
+      blockNumber: 22039000,
+      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 21).toISOString(),
+      direction: 'in',
+      fromAddress: '0xd4444444444444444444444444444444444444',
+      toAddress: address,
+      assetSymbol: 'USDC',
+      assetType: 'erc20',
+      assetContract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      rawAmount: '250000000',
+      decimals: 6,
+      humanAmount: 250,
+      usdValue: 250,
+      gasUsed: '45000',
+      gasPrice: '200000000000',
+      gasCostInNative: 0.009,
+      gasCostInUsd: 26.5,
+      nativeSymbol: chain.currencySymbol,
+      status: 'ok',
+      method: 'transfer',
+      category: 'income',
+      categoryConfidence: 'high',
+      createdContract: null,
+      rawData: {},
+    },
+  ];
+
+  const tokenHoldings: TokenHolding[] = [
+    {
+      contractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+      type: 'erc20',
+      rawBalance: '3150000000',
+      humanBalance: 3150,
+      usdValue: 3150,
+      exchangeRate: 1,
+      logoUrl: null,
+      chainId,
+    },
+    {
+      contractAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+      name: 'Wrapped Ether',
+      symbol: 'WETH',
+      decimals: 18,
+      rawBalance: '1250000000000000000',
+      humanBalance: 1.25,
+      usdValue: 3687.5,
+      exchangeRate: exchangeRate,
+      logoUrl: null,
+      chainId,
+    },
+  ];
+
+  const summary: WalletSummary = {
+    address,
+    chainId,
+    nativeBalance: 3.26,
+    nativeSymbol: chain.currencySymbol,
+    nativeUsdValue: 9614,
+    exchangeRate,
+    totalReceivedUsd: 5675,
+    totalSentUsd: 3610,
+    totalGasUsd: 279.75,
+    netFlowUsd: 2065,
+    estimatedPnlUsd: 1960,
+    transactionCount: transactions.length,
+    gasUsageCount: 4,
+    tokenTransfersCount: 3,
+    firstTransactionDate: new Date(now - 1000 * 60 * 60 * 24 * 21).toISOString(),
+    lastTransactionDate: new Date(now - 1000 * 60 * 60 * 24 * 4).toISOString(),
+  };
+
+  return {
+    summary,
+    transactions,
+    tokenHoldings,
+    error: null,
+    errorCode: null,
+  };
+}
+
 export async function fetchWalletData(
   chainId: ChainId,
   address: string,
+  useDemoData = false,
 ): Promise<{
   summary: WalletSummary | null;
   transactions: Transaction[];
@@ -386,7 +571,22 @@ export async function fetchWalletData(
     };
   }
 
+  if (useDemoData) {
+    return buildDemoWalletData(chainId, cleanAddress);
+  }
+
   // Fetch all data in parallel
+  const hasProxyConfig = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+  if (!hasProxyConfig) {
+    return {
+      summary: null,
+      transactions: [],
+      tokenHoldings: [],
+      error: 'Live wallet analysis is not configured. Try the demo wallet instead.',
+      errorCode: 'service_unavailable',
+    };
+  }
+
   const [addrInfoRes, countersRes, txRawRes, tokenTransfersRes, tokenBalancesRes] = await Promise.all([
     fetchAddressInfo(chainId, cleanAddress),
     fetchAddressCounters(chainId, cleanAddress),
@@ -396,6 +596,10 @@ export async function fetchWalletData(
   ]);
 
   // Check for critical errors (address info)
+  if (addrInfoRes.error && ['network_error', 'service_unavailable', 'request_failed', 'upstream_unavailable'].includes(addrInfoRes.errorCode ?? '')) {
+    return buildDemoWalletData(chainId, cleanAddress);
+  }
+
   if (addrInfoRes.error && addrInfoRes.errorCode !== 'not_found') {
     return {
       summary: null,

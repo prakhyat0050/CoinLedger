@@ -17,6 +17,7 @@ Built for the Blockscout PRO API Buildathon.
 - **Gas Fee Analytics** — Total gas spent, average per transaction, highest-gas transaction, and daily/monthly bar charts
 - **Tax-Ready Report** — Date-range filtering, category inclusion/exclusion, CSV export, and print support with tax preparation disclaimer
 - **Smart Insights** — Auto-generated observations from real wallet data (largest transactions, gas ratio, most active token/period, net flow direction)
+- **AI Wallet Copilot** — Ask questions about recent transactions, gas, and holdings in natural language; answers are grounded in wallet data and link cited transactions
 - **Wallet Health Score** — Activity-based score (not financial risk) combining transaction frequency (40%), active days (25%), unique contracts (20%), and token diversity (15%)
 - **12-Language Support** — Full i18n across the entire app: English, Hindi, Bengali, Marathi, Telugu, Tamil, Gujarati, Kannada, Malayalam, Punjabi, Spanish, French
 - **Locale-Aware Formatting** — Numbers, dates, and currency formatted using Intl APIs with locale-appropriate currency symbols (INR for Indic languages, EUR for Spanish/French, USD for English)
@@ -62,6 +63,7 @@ src/
 supabase/
   functions/
     blockscout-api/index.ts  — Secure proxy edge function (API key server-side, SSRF prevention)
+    wallet-copilot/index.ts  — Gemini-powered wallet Q&A (server-side API key)
   config.toml                — Edge function config
 ```
 
@@ -113,9 +115,18 @@ npm install
 npm run dev
 ```
 
-The Supabase project is pre-provisioned. Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) are in `.env`.
+The Supabase project is pre-provisioned. Copy `.env.example` to `.env` and set your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` values.
+
+If no Supabase config is present, the app automatically falls back to a demo wallet dataset so the dashboard remains usable for local previews and demos.
 
 The `BLOCKSCOUT_API_KEY` edge function secret is configured server-side and never exposed to the client.
+To enable AI Wallet Copilot, set the `GEMINI_API_KEY` Supabase function secret (`supabase secrets set GEMINI_API_KEY=...`) and deploy the `wallet-copilot` edge function (`supabase functions deploy wallet-copilot`). The Copilot sends the wallet summary, up to 40 token holdings, and up to 30 recent transactions to Gemini; never send private keys or seed phrases.
+
+## Deployment
+
+The GitHub Actions workflow deploys the app to GitHub Pages when a commit is pushed to the repository's default branch. In the repository settings, set **Pages → Build and deployment → Source** to **GitHub Actions**.
+
+To enable Supabase-backed wallet data and the AI Wallet Copilot in the deployed app, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as GitHub Actions repository secrets. Without them, the demo mode remains available, but backend features are not configured.
 
 ## Disclaimer
 

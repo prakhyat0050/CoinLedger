@@ -34,14 +34,23 @@ export function LandingPage() {
     setIsDemo(demo);
 
     try {
-      const result = await fetchWalletData(chainId, cleanAddr);
+      const result = await fetchWalletData(chainId, cleanAddr, demo);
 
       if (result.error) {
         setError(result.error, result.errorCode);
+        setLocalError(result.error);
         setAnalysisResult(null);
         setTransactions([]);
       } else if (result.transactions.length === 0 && result.tokenHoldings.length === 0) {
-        setError(t('wallet.emptyWallet'), 'empty_wallet');
+        const message = t('wallet.emptyWallet');
+        setError(message, 'empty_wallet');
+        setLocalError(message);
+        setAnalysisResult(null);
+        setTransactions([]);
+      } else if (!result.summary) {
+        const message = t('error.generic');
+        setError(message, 'unknown');
+        setLocalError(message);
         setAnalysisResult(null);
         setTransactions([]);
       } else {
@@ -68,7 +77,9 @@ export function LandingPage() {
         setView('dashboard');
       }
     } catch {
-      setError(t('error.generic'), 'unknown');
+      const message = t('error.generic');
+      setError(message, 'unknown');
+      setLocalError(message);
     } finally {
       setFetching(false);
       setLoading(false);
@@ -224,14 +235,6 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-surface-700 mt-8">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 text-center">
-          <a
-            href="/project.zip"
-            download
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent-500/15 border border-accent-500/40 text-accent-300 font-medium text-sm hover:bg-accent-500/25 hover:border-accent-500/60 transition-all mb-4"
-          >
-            <Download className="w-4 h-4" />
-            Download Project (.zip)
-          </a>
           <p className="text-sm text-slate-500">{t('footer.poweredBy')}</p>
           <p className="text-xs text-slate-600 mt-2">{t('footer.disclaimer')}</p>
         </div>

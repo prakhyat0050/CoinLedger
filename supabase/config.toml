@@ -1,2 +1,5 @@
 [functions.blockscout-api]
 verify_jwt = true
+
+[functions.wallet-copilot]
+verify_jwt = true
